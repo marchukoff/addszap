@@ -36,22 +36,24 @@ func (m message) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 }
 
 type header struct {
-	ContentType   string `json:"Content-Type"`
-	ContentLength string `json:"Content-Length"`
-	UserAgent     string `json:"User-Agent"`
-	Server        string `json:"Server"`
-	Via           string `json:"Via"`
 	Accept        string `json:"Accept"`
+	Authorization string `json:"Authorization"`
+	ContentLength string `json:"Content-Length"`
+	ContentType   string `json:"Content-Type"`
+	Server        string `json:"Server"`
+	UserAgent     string `json:"User-Agent"`
+	Via           string `json:"Via"`
 	XForwardedFor string `json:"X-Forwarded-For"`
 }
 
 func (h header) MarshalLogObject(enc zapcore.ObjectEncoder) error {
-	enc.AddString("content-type", h.ContentType)
-	enc.AddString("content-length", h.ContentLength)
-	enc.AddString("user-agent", h.UserAgent)
-	enc.AddString("server", h.Server)
-	enc.AddString("via", h.Via)
 	enc.AddString("accept", h.Accept)
+	enc.AddString("authorization", h.Authorization)
+	enc.AddString("content-length", h.ContentLength)
+	enc.AddString("content-type", h.ContentType)
+	enc.AddString("server", h.Server)
+	enc.AddString("user-agent", h.UserAgent)
+	enc.AddString("via", h.Via)
 	enc.AddString("x-forwarded-for", h.XForwardedFor)
 	return nil
 }

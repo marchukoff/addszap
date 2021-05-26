@@ -24,10 +24,12 @@ func NewLoggerRoundTripper(next http.RoundTripper, log *zap.Logger) LoggerRoundT
 func (rt LoggerRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) {
 	var buf bytes.Buffer
 	startTime := time.Now()
-	tee := io.TeeReader(r.Body, &buf)
 	reqBody := make(map[string]interface{})
-	_ = json.NewDecoder(tee).Decode(&reqBody)
-	r.Body = io.NopCloser(&buf)
+	if r.Body != nil {
+		tee := io.TeeReader(r.Body, &buf)
+		_ = json.NewDecoder(tee).Decode(&reqBody)
+		r.Body = io.NopCloser(&buf)
+	}
 
 	headers := header{}
 	t := reflect.ValueOf(&headers).Elem()
@@ -40,9 +42,13 @@ func (rt LoggerRoundTripper) RoundTrip(r *http.Request) (*http.Response, error) 
 	}
 
 	res, err := rt.next.RoundTrip(r)
+	var status int
+	if res != nil {
+		status = res.StatusCode
+	}
 
 	msg := message{
-		ReturnCode:     res.StatusCode,
+		ReturnCode:     status,
 		HttpMethod:     r.Method,
 		RequestHeaders: headers,
 		RemoteAddr:     r.RemoteAddr,
