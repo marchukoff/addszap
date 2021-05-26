@@ -17,10 +17,12 @@ func HttpLogger(next http.Handler, log *zap.Logger) http.Handler {
 		func(w http.ResponseWriter, r *http.Request) {
 			var buf bytes.Buffer
 			startTime := time.Now()
-			tee := io.TeeReader(r.Body, &buf)
 			reqBody := make(map[string]interface{})
-			_ = json.NewDecoder(tee).Decode(&reqBody)
-			r.Body = io.NopCloser(&buf)
+			if r.Body != nil {
+				tee := io.TeeReader(r.Body, &buf)
+				_ = json.NewDecoder(tee).Decode(&reqBody)
+				r.Body = io.NopCloser(&buf)
+			}
 
 			headers := header{}
 			t := reflect.ValueOf(&headers).Elem()
@@ -35,7 +37,7 @@ func HttpLogger(next http.Handler, log *zap.Logger) http.Handler {
 			wrapped := wrapResponseWriter(w)
 			next.ServeHTTP(wrapped, r)
 			msg := message{
-				ReturnCode:     wrapped.Status(),
+				ReturnCode:     wrapped.status,
 				HttpMethod:     r.Method,
 				RequestHeaders: headers,
 				RemoteAddr:     r.RemoteAddr,
