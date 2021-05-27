@@ -34,10 +34,10 @@ func HttpLogger(next http.Handler, log *zap.Logger) http.Handler {
 				}
 			}
 
-			wrapped := wrapResponseWriter(w)
-			next.ServeHTTP(wrapped, r)
+			rec := statusRecorder{w, http.StatusOK}
+			next.ServeHTTP(&rec, r)
 			msg := message{
-				ReturnCode:     wrapped.status,
+				ReturnCode:     rec.status,
 				HttpMethod:     r.Method,
 				RequestHeaders: headers,
 				RemoteAddr:     r.RemoteAddr,
