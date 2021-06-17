@@ -19,7 +19,11 @@ func NewWriteLogger(debug bool, writers ...io.Writer) *zap.Logger {
 	case 0:
 		writer = os.Stdout
 	case 1:
-		writer = writers[0]
+		if writers[0] == nil {
+			writer = os.Stdout
+		} else {
+			writer = writers[0]
+		}
 	default:
 		syncers := make([]io.Writer, len(writers))
 		for i, w := range writers {
